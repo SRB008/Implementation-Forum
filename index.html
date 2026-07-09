@@ -9,24 +9,25 @@
 </head>
 <body>
   <header class="app-header">
-    <h1>Planned Work</h1>
+    <h1>Implementation Forum: Planned Work</h1>
     <div class="header-right">
       <span id="file-status" class="file-status">No file connected</span>
       <button id="open-file-btn" class="btn">Open Data File</button>
       <button id="new-file-btn" class="btn">New Data File</button>
       <label class="btn file-import-label" id="import-label">
-        Import CSV
+        Open CSV
         <input type="file" id="import-input" accept=".csv" class="hidden" />
       </label>
       <button id="export-btn" class="btn hidden">Download CSV</button>
       <button id="export-png-btn" class="btn">Export to PNG</button>
+      <button id="next-forum-btn" class="btn" disabled>Next Forum</button>
       <button id="add-task-btn" class="btn btn-primary" disabled>+ Add Task</button>
     </div>
   </header>
 
   <p id="fallback-notice" class="fallback-notice hidden">
     Your browser doesn't support direct file editing (Chrome/Edge only). Use
-    <strong>Import CSV</strong> to load tasks.csv, make changes, then
+    <strong>Open CSV</strong> to load tasks.csv, make changes, then
     <strong>Download CSV</strong> and save it back over tasks.csv.
   </p>
 
@@ -66,6 +67,19 @@
         </div>
       </div>
     </form>
+  </div>
+
+  <div id="next-forum-confirm-backdrop" class="modal-backdrop hidden">
+    <div class="modal">
+      <h2>Next Forum</h2>
+      <p>This will update activity to the next sprint and delete older activity. Are you sure you want to continue?</p>
+      <div class="modal-actions">
+        <div class="modal-actions-right">
+          <button type="button" id="next-forum-no-btn" class="btn">No</button>
+          <button type="button" id="next-forum-yes-btn" class="btn btn-primary">Yes</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>
