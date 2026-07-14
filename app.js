@@ -9,6 +9,33 @@ const TYPE_COLORS = {
   D365: '#9aa0a6',
 };
 const VALID_SPRINTS = [0, 1];
+
+// Snapshot of sprintdates.csv (Sprint, StartDate). Update this list if that file changes.
+const SPRINT_DATES = [
+  { sprint: 141, date: new Date(2026, 6, 9) },
+  { sprint: 142, date: new Date(2026, 6, 23) },
+  { sprint: 143, date: new Date(2026, 7, 6) },
+  { sprint: 144, date: new Date(2026, 7, 20) },
+  { sprint: 145, date: new Date(2026, 8, 3) },
+  { sprint: 146, date: new Date(2026, 8, 17) },
+  { sprint: 147, date: new Date(2026, 9, 1) },
+  { sprint: 148, date: new Date(2026, 9, 15) },
+  { sprint: 149, date: new Date(2026, 9, 29) },
+  { sprint: 150, date: new Date(2026, 10, 12) },
+  { sprint: 151, date: new Date(2026, 10, 26) },
+  { sprint: 152, date: new Date(2026, 11, 10) },
+  { sprint: 153, date: new Date(2026, 11, 24) },
+  { sprint: 154, date: new Date(2027, 0, 7) },
+  { sprint: 155, date: new Date(2027, 0, 21) },
+  { sprint: 156, date: new Date(2027, 1, 4) },
+  { sprint: 157, date: new Date(2027, 1, 18) },
+  { sprint: 158, date: new Date(2027, 2, 4) },
+  { sprint: 159, date: new Date(2027, 2, 18) },
+];
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
 const CSV_HEADER = 'id,sprint,title,type';
 const DB_NAME = 'kanban-db';
 const STORE_NAME = 'handles';
@@ -131,12 +158,14 @@ const cardLists = {
 };
 
 const fileStatus = document.getElementById('file-status');
+const reconnectBtn = document.getElementById('reconnect-btn');
 const openFileBtn = document.getElementById('open-file-btn');
 const newFileBtn = document.getElementById('new-file-btn');
 const importInput = document.getElementById('import-input');
 const importLabel = document.getElementById('import-label');
 const exportBtn = document.getElementById('export-btn');
 const exportPngBtn = document.getElementById('export-png-btn');
+const nextForumBtn = document.getElementById('next-forum-btn');
 const addTaskBtn = document.getElementById('add-task-btn');
 const fallbackNotice = document.getElementById('fallback-notice');
 
@@ -189,7 +218,9 @@ async function connectHandle(handle, isNew) {
   }
 
   setFileStatus(fileHandle.name, true);
+  reconnectBtn.classList.add('hidden');
   addTaskBtn.disabled = false;
+  nextForumBtn.disabled = false;
   render();
 }
 
@@ -226,7 +257,10 @@ async function tryReconnectStoredHandle() {
     const handle = await idbGet(HANDLE_KEY);
     if (!handle) return;
     if ((await handle.queryPermission({ mode: 'readwrite' })) !== 'granted') {
-      setFileStatus(`${handle.name} (click Open tasks.csv to reconnect)`, false);
+      setFileStatus(`${handle.name} (permission needed)`, false);
+      reconnectBtn.textContent = `Reconnect to ${handle.name}`;
+      reconnectBtn.classList.remove('hidden');
+      reconnectBtn.onclick = () => reconnectHandle(handle);
       return;
     }
     const file = await handle.getFile();
@@ -235,6 +269,27 @@ async function tryReconnectStoredHandle() {
     tasks = parseCsv(text);
     setFileStatus(handle.name, true);
     addTaskBtn.disabled = false;
+  nextForumBtn.disabled = false;
+    render();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function reconnectHandle(handle) {
+  try {
+    if (!(await verifyPermission(handle))) {
+      setFileStatus(`${handle.name} (permission denied)`, false);
+      return;
+    }
+    const file = await handle.getFile();
+    const text = await file.text();
+    fileHandle = handle;
+    tasks = parseCsv(text);
+    setFileStatus(handle.name, true);
+    reconnectBtn.classList.add('hidden');
+    addTaskBtn.disabled = false;
+    nextForumBtn.disabled = false;
     render();
   } catch (err) {
     console.error(err);
@@ -250,6 +305,7 @@ importInput.addEventListener('change', async () => {
   tasks = parseCsv(text);
   setFileStatus(`Imported: ${file.name}`, true);
   addTaskBtn.disabled = false;
+  nextForumBtn.disabled = false;
   render();
   importInput.value = '';
 });
@@ -273,6 +329,23 @@ async function persist() {
     await writable.close();
   }
   // In fallback mode, persistence happens via the explicit "Download CSV" button.
+}
+
+// ---- sprint dates ----
+
+function formatSprintDate(date) {
+  return `${date.getDate()} ${MONTH_NAMES[date.getMonth()]}`;
+}
+
+function updateColumnTitles() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const upcoming = SPRINT_DATES.filter((s) => s.date >= today).sort((a, b) => a.date - b.date);
+
+  const nextTitle = document.getElementById('column-title-0');
+  const nextPlusOneTitle = document.getElementById('column-title-1');
+  if (upcoming[0]) nextTitle.textContent = `Next (${formatSprintDate(upcoming[0].date)})`;
+  if (upcoming[1]) nextPlusOneTitle.textContent = `Next+1 (${formatSprintDate(upcoming[1].date)})`;
 }
 
 // ---- rendering ----
@@ -448,6 +521,49 @@ async function exportBoardAsPng() {
 
 exportPngBtn.addEventListener('click', exportBoardAsPng);
 
+// ---- next forum ----
+
+const nextForumConfirmBackdrop = document.getElementById('next-forum-confirm-backdrop');
+const nextForumNoBtn = document.getElementById('next-forum-no-btn');
+const nextForumYesBtn = document.getElementById('next-forum-yes-btn');
+
+nextForumBtn.addEventListener('click', () => {
+  nextForumConfirmBackdrop.classList.remove('hidden');
+});
+
+nextForumNoBtn.addEventListener('click', () => {
+  nextForumConfirmBackdrop.classList.add('hidden');
+});
+
+nextForumConfirmBackdrop.addEventListener('click', (e) => {
+  if (e.target === nextForumConfirmBackdrop) nextForumConfirmBackdrop.classList.add('hidden');
+});
+
+nextForumYesBtn.addEventListener('click', async () => {
+  nextForumConfirmBackdrop.classList.add('hidden');
+
+  if (supportsFS && fileHandle) {
+    const file = await fileHandle.getFile();
+    const text = await file.text();
+    tasks = parseCsv(text);
+  }
+
+  for (const t of tasks) {
+    t.sprint -= 1;
+  }
+
+  let nextDupId = Number(nextId(tasks));
+  const duplicates = tasks
+    .filter((t) => t.sprint === 0)
+    .map((t) => ({ ...t, id: String(nextDupId++), sprint: 1 }));
+  tasks.push(...duplicates);
+
+  tasks = tasks.filter((t) => !(t.sprint === 1 && t.type === 'Release'));
+
+  await persist();
+  render();
+});
+
 // ---- modal ----
 
 function openAddModal(defaultSprint = 0) {
@@ -520,4 +636,5 @@ deleteBtn.addEventListener('click', async () => {
 
 // ---- init ----
 
+updateColumnTitles();
 tryReconnectStoredHandle();

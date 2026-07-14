@@ -1,0 +1,39 @@
+id,sprint,title,type
+27,0,Bundles Dashboard,Delivery
+28,0,Customer Order Management,Delivery
+29,0,Klarna,Delivery
+30,0,My Collection Bullion Dashboard,Delivery
+31,0,Physical Redemption,Delivery
+32,0,Self Serve Address Change,Delivery
+33,0,DMCCA,CRO
+34,0,Star Trek Theme A/B Test,CRO
+35,0,Audit Support,Cyber
+36,0,Release Support,Cyber
+37,0,D365 Data,Data
+38,0,D365 BI,Data
+39,0,Infrastructure Optimisation,Operations
+40,0,Ops Security,Operations
+41,0,Bug Fixing,D365
+42,0,Data Migration,D365
+43,0,Power Apps,D365
+44,1,UAT,D365
+45,0,Bundles,Release
+46,1,Bundles Dashboard,Delivery
+47,1,Customer Order Management,Release
+48,1,Klarna,Delivery
+49,1,My Collection Bullion Dashboard,Delivery
+50,1,Physical Redemption,Delivery
+51,1,Self Serve Address Change,Delivery
+52,1,DMCCA,CRO
+53,1,Star Trek Theme A/B Test,CRO
+54,1,Audit Support,Cyber
+55,1,Release Support,Cyber
+56,1,D365 Data,Data
+57,1,D365 BI,Data
+58,1,Infrastructure Optimisation,Operations
+59,1,Ops Security,Operations
+60,1,Bug Fixing,D365
+61,1,Data Migration,D365
+62,1,Power Apps,D365
+63,0,UAT,D365
+64,0,Workfront SSO,Operations

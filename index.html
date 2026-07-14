@@ -12,6 +12,7 @@
     <h1>Implementation Forum: Planned Work</h1>
     <div class="header-right">
       <span id="file-status" class="file-status">No file connected</span>
+      <button id="reconnect-btn" class="btn btn-primary hidden">Reconnect</button>
       <button id="open-file-btn" class="btn">Open Data File</button>
       <button id="new-file-btn" class="btn">New Data File</button>
       <label class="btn file-import-label" id="import-label">
@@ -33,11 +34,11 @@
 
   <main id="board" class="board">
     <section class="column" data-sprint="0">
-      <h2 class="column-title">Next</h2>
+      <h2 class="column-title" id="column-title-0">Next</h2>
       <div class="card-list" data-sprint="0"></div>
     </section>
     <section class="column" data-sprint="1">
-      <h2 class="column-title">Next+1</h2>
+      <h2 class="column-title" id="column-title-1">Next+1</h2>
       <div class="card-list" data-sprint="1"></div>
     </section>
   </main>
