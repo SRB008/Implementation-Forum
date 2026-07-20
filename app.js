@@ -1,8 +1,8 @@
-const VALID_TYPES = ['Release', 'Delivery', 'CRO', 'Data', 'Cyber', 'Operations', 'D365'];
+const VALID_TYPES = ['Release', 'Delivery', 'Digital', 'Data', 'Cyber', 'Operations', 'D365'];
 const TYPE_COLORS = {
   Release: '#4fce65',
   Delivery: '#5b8cff',
-  CRO: '#dc60c3',
+  Digital: '#dc60c3',
   Data: '#ffd505',
   Cyber: '#ff8b3e',
   Operations: '#ff4853',
@@ -12,7 +12,6 @@ const VALID_SPRINTS = [0, 1];
 
 // Snapshot of sprintdates.csv (Sprint, StartDate). Update this list if that file changes.
 const SPRINT_DATES = [
-  { sprint: 141, date: new Date(2026, 6, 9) },
   { sprint: 142, date: new Date(2026, 6, 23) },
   { sprint: 143, date: new Date(2026, 7, 6) },
   { sprint: 144, date: new Date(2026, 7, 20) },
@@ -36,7 +35,7 @@ const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
-const CSV_HEADER = 'id,sprint,title,type';
+const CSV_HEADER = 'id,sprint,title,type,isNew,isChanged';
 const DB_NAME = 'kanban-db';
 const STORE_NAME = 'handles';
 const HANDLE_KEY = 'tasksFile';
@@ -91,15 +90,24 @@ function parseCsv(text) {
   const lines = text.split(/\r?\n/).filter((l) => l.length > 0);
   if (lines.length <= 1) return [];
   return lines.slice(1).map((line) => {
-    const [id, sprint, title, type] = parseCsvLine(line);
-    return { id, sprint: Number(sprint), title, type };
+    const [id, sprint, title, type, isNew, isChanged] = parseCsvLine(line);
+    return { id, sprint: Number(sprint), title, type, isNew: isNew === '1', isChanged: isChanged === '1' };
   });
 }
 
 function tasksToCsv(list) {
   const lines = [CSV_HEADER];
   for (const t of list) {
-    lines.push([t.id, t.sprint, escapeCsvField(t.title), escapeCsvField(t.type)].join(','));
+    lines.push(
+      [
+        t.id,
+        t.sprint,
+        escapeCsvField(t.title),
+        escapeCsvField(t.type),
+        t.isNew ? '1' : '0',
+        t.isChanged ? '1' : '0',
+      ].join(',')
+    );
   }
   return lines.join('\n') + '\n';
 }
@@ -176,6 +184,8 @@ const taskIdInput = document.getElementById('task-id');
 const taskTitleInput = document.getElementById('task-title');
 const taskTypeSelect = document.getElementById('task-type');
 const taskSprintSelect = document.getElementById('task-sprint');
+const taskNewInput = document.getElementById('task-new');
+const taskChangedInput = document.getElementById('task-changed');
 const deleteBtn = document.getElementById('delete-task-btn');
 
 taskTypeSelect.innerHTML = VALID_TYPES.map((t) => `<option value="${t}">${t}</option>`).join('');
@@ -400,11 +410,38 @@ function renderCard(task) {
   card.dataset.id = task.id;
   card.style.setProperty('--type-color', TYPE_COLORS[task.type]);
 
+  const titleRow = document.createElement('div');
+  titleRow.className = 'card-title-row';
+
   const title = document.createElement('p');
   title.className = 'card-title';
   title.textContent = task.title;
+  titleRow.appendChild(title);
 
-  card.appendChild(title);
+  if (task.isNew || task.isChanged) {
+    const badges = document.createElement('span');
+    badges.className = 'card-badges';
+
+    if (task.isNew) {
+      const badge = document.createElement('span');
+      badge.className = 'badge-icon badge-new';
+      badge.textContent = '★';
+      badge.title = 'New';
+      badges.appendChild(badge);
+    }
+
+    if (task.isChanged) {
+      const badge = document.createElement('span');
+      badge.className = 'badge-icon badge-changed';
+      badge.textContent = '→';
+      badge.title = 'Changed';
+      badges.appendChild(badge);
+    }
+
+    titleRow.appendChild(badges);
+  }
+
+  card.appendChild(titleRow);
 
   card.addEventListener('click', () => openEditModal(task));
 
@@ -572,6 +609,8 @@ function openAddModal(defaultSprint = 0) {
   taskTitleInput.value = '';
   taskTypeSelect.selectedIndex = 0;
   taskSprintSelect.value = String(defaultSprint);
+  taskNewInput.checked = true;
+  taskChangedInput.checked = false;
   deleteBtn.classList.add('hidden');
   modalBackdrop.classList.remove('hidden');
   taskTitleInput.focus();
@@ -583,6 +622,8 @@ function openEditModal(task) {
   taskTitleInput.value = task.title;
   taskTypeSelect.value = task.type;
   taskSprintSelect.value = String(task.sprint);
+  taskNewInput.checked = !!task.isNew;
+  taskChangedInput.checked = !!task.isChanged;
   deleteBtn.classList.remove('hidden');
   modalBackdrop.classList.remove('hidden');
   taskTitleInput.focus();
@@ -605,6 +646,8 @@ taskForm.addEventListener('submit', async (e) => {
     title: taskTitleInput.value.trim(),
     type: taskTypeSelect.value,
     sprint: Number(taskSprintSelect.value),
+    isNew: taskNewInput.checked,
+    isChanged: taskChangedInput.checked,
   };
 
   const errors = validateTask(payload);

@@ -54,11 +54,20 @@
       <label for="task-type">Type</label>
       <select id="task-type" required></select>
 
-      <label for="task-sprint">Column</label>
+      <label for="task-sprint">Sprint</label>
       <select id="task-sprint" required>
         <option value="0">Next</option>
         <option value="1">Next+1</option>
       </select>
+
+      <div class="modal-checkbox-row">
+        <label class="checkbox-label" for="task-new">
+          <input type="checkbox" id="task-new" /> New
+        </label>
+        <label class="checkbox-label" for="task-changed">
+          <input type="checkbox" id="task-changed" /> Changed
+        </label>
+      </div>
 
       <div class="modal-actions">
         <button type="button" id="delete-task-btn" class="btn btn-danger hidden">Delete</button>
