@@ -1,12 +1,13 @@
-const VALID_TYPES = ['Release', 'Delivery', 'Digital', 'Data', 'Cyber', 'Operations', 'D365'];
+const VALID_TYPES = ['Release', 'Delivery', 'Digital', 'Data', 'Cyber', 'Operations', 'D365', 'Delayed'];
 const TYPE_COLORS = {
-  Release: '#4fce65',
-  Delivery: '#5b8cff',
-  Digital: '#dc60c3',
-  Data: '#ffd505',
-  Cyber: '#ff8b3e',
-  Operations: '#ff4853',
-  D365: '#9aa0a6',
+  Release: { highlight: '#4fce65', background: 'var(--card-bg)' },
+  Delivery: { highlight: '#5b8cff', background: 'var(--card-bg)' },
+  Digital: { highlight: '#dc60c3', background: 'var(--card-bg)' },
+  Data: { highlight: '#ffd505', background: 'var(--card-bg)' },
+  Cyber: { highlight: '#ff8b3e', background: 'var(--card-bg)' },
+  Operations: { highlight: '#ff4853', background: 'var(--card-bg)' },
+  D365: { highlight: '#9aa0a6', background: 'var(--card-bg)' },
+  Delayed: { highlight: '#ffffff', background: 'rgba(255, 0, 0, 0.1)' },
 };
 const VALID_SPRINTS = [0, 1];
 
@@ -387,7 +388,7 @@ function render() {
 
       const header = document.createElement('div');
       header.className = 'group-header';
-      header.style.setProperty('--type-color', TYPE_COLORS[type]);
+      header.style.setProperty('--type-color', TYPE_COLORS[type].highlight);
 
       const dot = document.createElement('span');
       dot.className = 'group-header-dot';
@@ -408,7 +409,8 @@ function renderCard(task) {
   card.className = 'card';
   card.draggable = true;
   card.dataset.id = task.id;
-  card.style.setProperty('--type-color', TYPE_COLORS[task.type]);
+  card.style.setProperty('--type-color', TYPE_COLORS[task.type].highlight);
+  card.style.setProperty('--type-bg', TYPE_COLORS[task.type].background);
 
   const titleRow = document.createElement('div');
   titleRow.className = 'card-title-row';

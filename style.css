@@ -146,7 +146,7 @@ body {
 }
 
 .card {
-  background: var(--card-bg);
+  background: var(--type-bg, var(--card-bg));
   border-radius: 6px;
   padding: 10px 12px;
   box-shadow: var(--shadow);
